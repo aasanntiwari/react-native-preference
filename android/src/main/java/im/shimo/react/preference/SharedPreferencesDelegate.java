@@ -91,7 +91,7 @@ public class SharedPreferencesDelegate {
         editor.putString(mPreferenceKey, gson.toJson(INSTANCE.singlePreference,HashMap.class));
         editor.apply();
 
-        if (INSTANCE.whiteList.contains(key)) {
+        if (INSTANCE.whiteList!=null && INSTANCE.whiteList.contains(key)) {
             //Broadcast
             Intent intent = new Intent(kSHMPreferenceClearedNotification);
             intent.putExtra("MSG", key);
@@ -110,13 +110,13 @@ public class SharedPreferencesDelegate {
         tmpMap.putAll(INSTANCE.singlePreference);
         tmpMap.put(key,value);
 
-        if (INSTANCE.whiteList.size() == 0) {
+        if (INSTANCE.whiteList!=null && INSTANCE.whiteList.size() == 0) {
             Log.w(TAG, "RNPreference - white list is null !");
         }
 
         // Diff
         if (!value.equals(INSTANCE.singlePreference.get(key))) {
-            if (INSTANCE.whiteList.contains(key)) {
+            if (INSTANCE.whiteList!=null && INSTANCE.whiteList.contains(key)) {
                 // in white list
                 Log.d(TAG, String.format( "RNPreference Changed :  {%s} {%s}",key,value));
                 // Broadcast
