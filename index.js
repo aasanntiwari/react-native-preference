@@ -6,17 +6,7 @@ const listeners = new Set();
 
 eventEmitter.addListener('SHMPreferenceWhiteListChanged', info => {
     for (const key in info) {
-        const value = info[key];
-        if (isNil(value)) {
-            delete PREFERENCES[key];
-        } else {
-            try {
-                const safeValue = JSON.parse(JSON.stringify(value));
-                PREFERENCES[key] = safeValue;
-            } catch (error) {
-                console.warn('wrong format:', value);
-            }
-        }
+        set(key, info[key]);
     }
 
     for (let listener of listeners) {
@@ -25,21 +15,21 @@ eventEmitter.addListener('SHMPreferenceWhiteListChanged', info => {
 });
 
 eventEmitter.addListener('SHMPreferenceClear', info => {
-    if (!isNil(info)) {
+    if (info != null) {
         //clear key
-        const key = info['key'];
-        if (!isNil(PREFERENCES[key])) {
-            delete PREFERENCES[key];
+        const key = info[key];
+        if (PREFERENCES[key] !== null) {
+            clear(key);
             for (let listener of listeners) {
-                listener({[key]: null});
+                listener();
             }
         }
     } else {
         //clear all
         if (Object.keys(PREFERENCES).length !== 0) {
-            PREFERENCES = {};
+            clear();
             for (let listener of listeners) {
-                listener({});
+                listener();
             }
         }
     }
@@ -63,11 +53,17 @@ try {
 }
 
 function get(key) {
-    return isNil(key) ? PREFERENCES : PREFERENCES[key];
+    if (key != null) {
+        return PREFERENCES[key];
+    } else {
+        return {
+            ...PREFERENCES,
+        };
+    }
 }
 
 function set(key, value) {
-    if (isNil(value)) {
+    if (value === null || typeof value === 'undefined') {
         return clear(key);
     } else {
         try {
@@ -83,7 +79,7 @@ function set(key, value) {
 }
 
 function clear(key) {
-    if (isNil(key)) {
+    if (key === null || typeof key === 'undefined') {
         PREFERENCES = {};
         return RNPreferenceManager.clear();
     } else {
@@ -97,10 +93,6 @@ function clear(key) {
 // 设置白名单, (需要接收状态发生改变的keys)
 function setWhiteList(list) {
     RNPreferenceManager.setWhiteList(list);
-}
-
-function isNil(value) {
-    return value === null || value === undefined
 }
 
 export default {
